@@ -10,7 +10,7 @@ import androidx.recyclerview.widget.RecyclerView
 import eu.vmpay.jsonplaceholder.R
 import eu.vmpay.jsonplaceholder.repository.Post
 
-class PostAdapter(private val clickListener: (Post?) -> Unit) :
+class PostAdapter(private val clickListener: (Post?, view: View) -> Unit) :
     PagedListAdapter<Post, PostAdapter.PostViewHolder>(DIFF_CALLBACK) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostViewHolder {
@@ -36,7 +36,7 @@ class PostAdapter(private val clickListener: (Post?) -> Unit) :
 
     class PostViewHolder(
         view: View,
-        clickListener: (Post?) -> Unit
+        clickListener: (Post?, view: View) -> Unit
     ) : RecyclerView.ViewHolder(view) {
 
         private val header: TextView = view.findViewById(R.id.tvHeader)
@@ -46,7 +46,8 @@ class PostAdapter(private val clickListener: (Post?) -> Unit) :
 
         init {
             view.setOnClickListener {
-                clickListener.invoke(post)
+                header.transitionName = "transitionTitle"
+                clickListener.invoke(post, header)
             }
         }
 
