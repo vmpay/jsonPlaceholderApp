@@ -1,18 +1,31 @@
 package eu.vmpay.jsonplaceholder
 
-import eu.vmpay.jsonplaceholder.utils.SchedulerProvider
-import io.reactivex.Scheduler
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.test.*
+import org.junit.rules.TestRule
+import org.junit.runner.Description
+import org.junit.runners.model.Statement
 import org.mockito.Mockito
 
 fun <T> any(): T {
     return Mockito.any()
 }
 
-class TestSchedulerProvider(private val testScheduler: Scheduler) : SchedulerProvider {
+class TestCoroutineRule : TestRule {
 
-    override fun computation() = testScheduler
+    private val testCoroutineDispatcher = TestCoroutineDispatcher()
+    private val testCoroutineScope = TestCoroutineScope(testCoroutineDispatcher)
 
-    override fun io() = testScheduler
+    override fun apply(base: Statement, description: Description) = object : Statement() {
+        @Throws(Throwable::class)
+        override fun evaluate() {
+            Dispatchers.setMain(testCoroutineDispatcher)
+            base.evaluate()
+            Dispatchers.resetMain()
+            testCoroutineDispatcher.cleanupTestCoroutines()
+        }
+    }
 
-    override fun main() = testScheduler
+    fun runBlockingTest(block: suspend TestCoroutineScope.() -> Unit) =
+        testCoroutineScope.runBlockingTest(block)
 }

@@ -4,6 +4,8 @@ import eu.vmpay.jsonplaceholder.repository.local.CommentsDao
 import eu.vmpay.jsonplaceholder.repository.local.PostsDao
 import eu.vmpay.jsonplaceholder.repository.local.UsersDao
 import eu.vmpay.jsonplaceholder.repository.remote.JsonPlaceholderService
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class AppRepository @Inject constructor(
@@ -13,24 +15,31 @@ class AppRepository @Inject constructor(
     private val usersDao: UsersDao
 ) {
 
-    fun getPostsList() = postsDao.get()
-
     fun getPostsListFactory() = postsDao.getFactory()
 
-    fun getPost(postId: Int) = postsDao.getById(postId)
+    suspend fun getPost(postId: Int): List<Post> = postsDao.getById(postId)
 
-    fun fetchPosts() = jsonPlaceholderService.getPosts()
-        .doOnSuccess { postsDao.insertOrUpdate(it).subscribe() }
+    suspend fun fetchPosts(): List<Post> = withContext(Dispatchers.IO) {
+        val data = jsonPlaceholderService.getPosts()
+        postsDao.insert(data.toTypedArray())
+        data
+    }
 
-    fun getUser(userId: String) = usersDao.getById(userId)
+    suspend fun getUser(userId: String) = usersDao.getById(userId)
 
-    fun fetchUser(userId: Int) = jsonPlaceholderService.getUser(userId)
-        .doOnSuccess { usersDao.insertOrUpdate(it).subscribe() }
+    suspend fun fetchUser(userId: Int) = withContext(Dispatchers.IO) {
+        val data = jsonPlaceholderService.getUser(userId)
+        usersDao.insertOrUpdate(data)
+        data
+    }
 
-    fun getCommentsByPost(postId: Int) = commentsDao.getByPostId(postId)
+    suspend fun getCommentsByPost(postId: Int) = commentsDao.getByPostId(postId)
 
     fun getCommentsByPostFactory(postId: Int) = commentsDao.getFactory(postId)
 
-    fun fetchCommentsByPost(postId: Int) = jsonPlaceholderService.getPostComments(postId)
-        .doOnSuccess { commentsDao.insertOrUpdate(it).subscribe() }
+    suspend fun fetchCommentsByPost(postId: Int) = withContext(Dispatchers.IO) {
+        val data = jsonPlaceholderService.getPostComments(postId)
+        commentsDao.insertOrUpdate(data)
+        data
+    }
 }

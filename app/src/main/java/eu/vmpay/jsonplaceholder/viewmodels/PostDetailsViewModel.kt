@@ -8,15 +8,16 @@ import eu.vmpay.jsonplaceholder.repository.AppRepository
 import eu.vmpay.jsonplaceholder.repository.Comment
 import eu.vmpay.jsonplaceholder.repository.Post
 import eu.vmpay.jsonplaceholder.repository.User
-import eu.vmpay.jsonplaceholder.utils.SchedulerProvider
 import eu.vmpay.jsonplaceholder.utils.postDistinct
-import io.reactivex.Flowable
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-class PostDetailsViewModel @Inject constructor(
-    private val appRepository: AppRepository,
-    private val schedulerProvider: SchedulerProvider
-) : BaseViewModel() {
+class PostDetailsViewModel @Inject constructor(private val appRepository: AppRepository) :
+    BaseViewModel() {
 
     val post = MutableLiveData<Post>()
     val user = MutableLiveData<User>()
@@ -25,45 +26,28 @@ class PostDetailsViewModel @Inject constructor(
 
     fun setup(postId: Int) {
         comments = LivePagedListBuilder(appRepository.getCommentsByPostFactory(postId), 50).build()
-        compositeDisposable.add(
-            appRepository.getPost(postId)
-                .subscribeOn(schedulerProvider.io())
-                .flatMap {
-                    val currentPost = it.firstOrNull()
-                    if (currentPost != null) {
-                        post.postDistinct(currentPost)
-                        compositeDisposable.add(
-                            appRepository.fetchUser(currentPost.userId)
-                                .subscribeOn(schedulerProvider.io())
-                                .observeOn(schedulerProvider.main())
-                                .subscribe({
-                                    error.value = "null"
-                                }, {
-                                    error.value = it.message
-                                })
-                        )
-                        appRepository.getUser("${currentPost.userId}")
-                    } else {
-                        Flowable.error(Throwable("Post not found"))
-                    }
+        launch {
+            flow { emit(appRepository.getPost(postId)) }
+                .map { postList ->
+                    val post = postList.first()
+                    this@PostDetailsViewModel.post.value = post
+                    appRepository.fetchUser(post.userId)
+                    appRepository.getUser(post.userId.toString())
                 }
-                .observeOn(schedulerProvider.main())
-                .subscribe({
+                .catch {
+                    error.value = it.message
+                    it.printStackTrace()
+                }
+                .collect {
                     error.value = "null"
                     user.postDistinct(it.firstOrNull())
-                }, {
+                }
+            flow { emit(appRepository.fetchCommentsByPost(postId)) }
+                .catch {
                     error.value = it.message
-                })
-        )
-        compositeDisposable.add(
-            appRepository.fetchCommentsByPost(postId)
-                .subscribeOn(schedulerProvider.io())
-                .observeOn(schedulerProvider.main())
-                .subscribe({
-                    error.value = "null"
-                }, {
-                    error.value = it.message
-                })
-        )
+                    it.printStackTrace()
+                }
+                .collect { error.value = "null" }
+        }
     }
 }

@@ -40,22 +40,20 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-extensions:$rootProject.lifecycleVersion"
     implementation "androidx.lifecycle:lifecycle-common-java8:$rootProject.lifecycleVersion"
 
-    // RxJava, RxAndroid, RxKotlin
-    implementation "io.reactivex.rxjava2:rxkotlin:$rootProject.rxKotlinVersion"
-    implementation "io.reactivex.rxjava2:rxandroid:$rootProject.rxAndroidVersion"
-    implementation "io.reactivex.rxjava2:rxjava:$rootProject.rxJavaVersion"
+    // Coroutines
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$rootProject.coroutinesCoreVersion"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$rootProject.coroutinesCoreVersion"
 
     // Retrofit rest client, adapter & Gson converter
     implementation("com.squareup.okhttp3:okhttp:$rootProject.okHttpVersion")
     implementation "com.squareup.retrofit2:retrofit:$rootProject.retrofitVersion"
-    implementation "com.squareup.retrofit2:adapter-rxjava2:$rootProject.retrofitVersion"
     implementation "com.squareup.retrofit2:converter-gson:$rootProject.retrofitVersion"
     implementation "com.squareup.okhttp3:logging-interceptor:$rootProject.loggingInterceptorVersion"
 
     // Room database
     implementation "androidx.room:room-runtime:$rootProject.roomVersion"
     kapt "androidx.room:room-compiler:$rootProject.roomVersion"
-    implementation "androidx.room:room-rxjava2:$rootProject.roomVersion"
+    implementation "androidx.room:room-ktx:$rootProject.roomVersion"
 
     // Navigation component
     implementation "androidx.navigation:navigation-fragment-ktx:$rootProject.navigationVersion"
@@ -75,6 +73,7 @@ dependencies {
     testImplementation "junit:junit:$rootProject.junitVersion"
     testImplementation "androidx.arch.core:core-testing:$rootProject.lifecycleVersion"
     testImplementation "org.mockito:mockito-core:$rootProject.mockitoVersion"
+    testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$rootProject.coroutinesCoreVersion"
 
     // Instrumented tests utils
     androidTestImplementation "androidx.test.ext:junit:$rootProject.junitExtVersion"

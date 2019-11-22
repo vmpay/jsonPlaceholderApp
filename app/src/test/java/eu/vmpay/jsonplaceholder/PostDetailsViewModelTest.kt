@@ -7,20 +7,18 @@ import eu.vmpay.jsonplaceholder.repository.Comment
 import eu.vmpay.jsonplaceholder.repository.Post
 import eu.vmpay.jsonplaceholder.repository.User
 import eu.vmpay.jsonplaceholder.viewmodels.PostDetailsViewModel
-import io.reactivex.Flowable
-import io.reactivex.Single
-import io.reactivex.schedulers.TestScheduler
 import junit.framework.TestCase.*
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TestRule
-import org.mockito.Mockito.`when`
-import org.mockito.Mockito.mock
+import org.mockito.Mockito.*
 
 class PostDetailsViewModelTest {
     @get:Rule
     var rule: TestRule = InstantTaskExecutorRule()
+    @get:Rule
+    val testCoroutineRule = TestCoroutineRule()
 
     private val appRepository = mock(AppRepository::class.java)
     private val dataSourceFactory =
@@ -32,28 +30,25 @@ class PostDetailsViewModelTest {
     private val userId = 0
     private val errorMessage = "Error message"
 
-    private val testScheduler = TestScheduler()
-    private val schedulerProvider = TestSchedulerProvider(testScheduler)
-
     private lateinit var viewModel: PostDetailsViewModel
 
     @Before
-    fun setUp() {
-        viewModel = PostDetailsViewModel(appRepository, schedulerProvider)
+    fun setUp() = testCoroutineRule.runBlockingTest {
+        viewModel = PostDetailsViewModel(appRepository)
         `when`(appRepository.getCommentsByPostFactory(postId)).thenReturn(dataSourceFactory)
         `when`(throwable.message).thenReturn(errorMessage)
+        `when`(post.userId).thenReturn(userId)
+        `when`(appRepository.getPost(postId)).thenReturn(listOf(post))
     }
 
     @Test
-    fun setupHappyTest() {
-        `when`(appRepository.fetchCommentsByPost(postId)).thenReturn(Single.just(listOf()))
-        `when`(appRepository.getPost(postId)).thenReturn(Flowable.just(listOf(post)))
+    fun setupHappyTest() = testCoroutineRule.runBlockingTest {
+        `when`(appRepository.fetchCommentsByPost(postId)).thenReturn(listOf())
         `when`(post.userId).thenReturn(userId)
-        `when`(appRepository.fetchUser(userId)).thenReturn(Single.just(user))
-        `when`(appRepository.getUser(userId.toString())).thenReturn(Flowable.just(listOf(user)))
+        `when`(appRepository.fetchUser(userId)).thenReturn(user)
+        `when`(appRepository.getUser(userId.toString())).thenReturn(listOf(user))
 
         viewModel.setup(postId)
-        testScheduler.triggerActions()
 
         assertEquals("null", viewModel.error.value)
         assertEquals(user, viewModel.user.value)
@@ -61,29 +56,27 @@ class PostDetailsViewModelTest {
     }
 
     @Test
-    fun setupFetchUserErrorTest() {
-        `when`(appRepository.fetchCommentsByPost(postId)).thenReturn(Single.error(throwable))
-        `when`(appRepository.getPost(postId)).thenReturn(Flowable.just(listOf(post)))
-        `when`(post.userId).thenReturn(userId)
-        `when`(appRepository.fetchUser(userId)).thenReturn(Single.error(throwable))
-        `when`(appRepository.getUser(userId.toString())).thenReturn(Flowable.error(throwable))
+    fun setupFetchUserErrorTest() = testCoroutineRule.runBlockingTest {
+        `when`(appRepository.fetchCommentsByPost(postId)).thenAnswer { throw throwable }
+        `when`(appRepository.fetchUser(userId)).thenAnswer { throw throwable }
+        `when`(appRepository.getUser(userId.toString())).thenAnswer { throw throwable }
 
         viewModel.setup(postId)
-        testScheduler.triggerActions()
 
+        verify(throwable, times(2)).printStackTrace()
         assertEquals(errorMessage, viewModel.error.value)
         assertNull(viewModel.user.value)
         assertNotNull(viewModel.comments)
     }
 
     @Test
-    fun setupGetPostErrorTest() {
-        `when`(appRepository.fetchCommentsByPost(postId)).thenReturn(Single.error(throwable))
-        `when`(appRepository.getPost(postId)).thenReturn(Flowable.just(listOf()))
+    fun setupGetPostErrorTest() = testCoroutineRule.runBlockingTest {
+        `when`(appRepository.fetchCommentsByPost(postId)).thenAnswer { throw throwable }
+        `when`(appRepository.getPost(postId)).thenAnswer { throw throwable }
 
         viewModel.setup(postId)
-        testScheduler.triggerActions()
 
+        verify(throwable, times(2)).printStackTrace()
         assertEquals(errorMessage, viewModel.error.value)
         assertNull(viewModel.user.value)
         assertNotNull(viewModel.comments)
