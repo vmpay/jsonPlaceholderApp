@@ -1,15 +1,20 @@
 package eu.vmpay.jsonplaceholder.viewmodels
 
 import androidx.lifecycle.ViewModel
-import io.reactivex.disposables.CompositeDisposable
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlin.coroutines.CoroutineContext
 
-abstract class BaseViewModel : ViewModel() {
+abstract class BaseViewModel : ViewModel(), CoroutineScope {
 
-    protected val compositeDisposable = CompositeDisposable()
+    private val supervisorJob = Job()
+
+    override val coroutineContext: CoroutineContext
+        get() = supervisorJob + Dispatchers.Main
 
     override fun onCleared() {
-        if (!compositeDisposable.isDisposed)
-            compositeDisposable.dispose()
+        supervisorJob.cancel()
         super.onCleared()
     }
 }

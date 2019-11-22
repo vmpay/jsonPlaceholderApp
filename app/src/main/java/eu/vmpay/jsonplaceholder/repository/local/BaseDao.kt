@@ -4,8 +4,6 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Update
-import io.reactivex.Completable
-import io.reactivex.Single
 
 abstract class BaseDao<T> {
 
@@ -15,7 +13,7 @@ abstract class BaseDao<T> {
      * @param obj the object to be inserted
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    abstract fun insert(obj: T): Single<Long>
+    abstract suspend fun insert(obj: T): Long
 
     /**
      * Insert an array of objects in the database. If there is the row with the same primary key,
@@ -24,7 +22,7 @@ abstract class BaseDao<T> {
      * @param obj the objects to be inserted
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    abstract fun insert(obj: Array<T>): Single<List<Long>>
+    abstract suspend fun insert(obj: Array<T>): List<Long>
 
     /**
      * Update an object from the database in a synchronous way
@@ -32,7 +30,7 @@ abstract class BaseDao<T> {
      * @param obj the object to be updated
      */
     @Update
-    abstract fun update(obj: T): Single<Int>
+    abstract suspend fun update(obj: T): Int
 
     /**
      * Update an object from the database in a synchronous way
@@ -48,7 +46,7 @@ abstract class BaseDao<T> {
      * @param obj the object to be deleted
      */
     @Delete
-    abstract fun delete(obj: T): Single<Int>
+    abstract fun delete(obj: T): Int
 
     /**
      * Insert an object in the database. Ignores if there is the row with the same primary key,
@@ -57,7 +55,7 @@ abstract class BaseDao<T> {
      * @param obj the object to be inserted
      */
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    abstract fun insertIgnore(obj: T): Single<Long>
+    abstract fun insertIgnore(obj: T): Long
 
     /**
      * Insert an object in the database. Ignores if there is the row with the same primary key,
@@ -74,10 +72,9 @@ abstract class BaseDao<T> {
      *
      * @param list the objects to be inserted
      */
-    fun insertOrUpdate(list: List<T>): Completable {
-        return Completable.create { subscriber ->
-            list.forEach { insertOrUpdateSync(it) }
-            subscriber.onComplete()
+    fun insertOrUpdate(list: List<T>) {
+        list.forEach {
+            insertIgnoreSync(it)
         }
     }
 
@@ -87,11 +84,8 @@ abstract class BaseDao<T> {
      *
      * @param obj the object to be inserted
      */
-    fun insertOrUpdate(obj: T): Completable {
-        return Completable.create { subscriber ->
-            insertOrUpdateSync(obj)
-            subscriber.onComplete()
-        }
+    fun insertOrUpdate(obj: T) {
+        insertOrUpdateSync(obj)
     }
 
     private fun insertOrUpdateSync(obj: T) {
