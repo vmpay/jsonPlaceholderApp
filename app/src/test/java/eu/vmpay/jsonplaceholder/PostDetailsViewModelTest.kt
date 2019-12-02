@@ -12,6 +12,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TestRule
+import org.mockito.ArgumentMatchers
 import org.mockito.Mockito.*
 
 class PostDetailsViewModelTest {
@@ -43,7 +44,13 @@ class PostDetailsViewModelTest {
 
     @Test
     fun setupHappyTest() = testCoroutineRule.runBlockingTest {
-        `when`(appRepository.fetchCommentsByPost(postId)).thenReturn(listOf())
+        `when`(
+            appRepository.fetchCommentsByPost(
+                ArgumentMatchers.anyInt(),
+                ArgumentMatchers.anyInt(),
+                ArgumentMatchers.anyInt()
+            )
+        ).thenReturn(listOf())
         `when`(post.userId).thenReturn(userId)
         `when`(appRepository.fetchUser(userId)).thenReturn(user)
         `when`(appRepository.getUser(userId.toString())).thenReturn(listOf(user))
@@ -57,7 +64,8 @@ class PostDetailsViewModelTest {
 
     @Test
     fun setupFetchUserErrorTest() = testCoroutineRule.runBlockingTest {
-        `when`(appRepository.fetchCommentsByPost(postId)).thenAnswer { throw throwable }
+        `when`(appRepository.fetchCommentsByPost(anyInt(), anyInt(), anyInt()))
+            .thenAnswer { throw throwable }
         `when`(appRepository.fetchUser(userId)).thenAnswer { throw throwable }
         `when`(appRepository.getUser(userId.toString())).thenAnswer { throw throwable }
 
@@ -71,7 +79,8 @@ class PostDetailsViewModelTest {
 
     @Test
     fun setupGetPostErrorTest() = testCoroutineRule.runBlockingTest {
-        `when`(appRepository.fetchCommentsByPost(postId)).thenAnswer { throw throwable }
+        `when`(appRepository.fetchCommentsByPost(anyInt(), anyInt(), anyInt()))
+            .thenAnswer { throw throwable }
         `when`(appRepository.getPost(postId)).thenAnswer { throw throwable }
 
         viewModel.setup(postId)

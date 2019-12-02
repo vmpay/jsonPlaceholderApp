@@ -42,7 +42,7 @@ class PostDetailsViewModel @Inject constructor(private val appRepository: AppRep
                     error.value = "null"
                     user.postDistinct(it.firstOrNull())
                 }
-            flow { emit(appRepository.fetchCommentsByPost(postId)) }
+            flow { emit(appRepository.fetchCommentsByPost(postId, 10, 0)) }
                 .catch {
                     error.value = it.message
                     it.printStackTrace()

@@ -11,6 +11,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TestRule
+import org.mockito.ArgumentMatchers
 import org.mockito.Mockito.*
 
 class PostsListViewModelTest {
@@ -31,10 +32,15 @@ class PostsListViewModelTest {
     @Test
     fun initHappyTest() = testCoroutineRule.runBlockingTest {
         val post = mock(Post::class.java)
-        `when`(appRepository.fetchPosts()).thenReturn(listOf(post))
+        `when`(
+            appRepository.fetchPosts(
+                ArgumentMatchers.anyInt(),
+                ArgumentMatchers.anyInt()
+            )
+        ).thenReturn(listOf(post))
         val viewModel = PostsListViewModel(appRepository)
 
-        verify(appRepository).fetchPosts()
+        verify(appRepository).fetchPosts(ArgumentMatchers.anyInt(), ArgumentMatchers.anyInt())
         assertEquals("null", viewModel.error.value)
         assertNotNull(viewModel.postsList)
 
@@ -45,10 +51,15 @@ class PostsListViewModelTest {
         val errorMessage = "Error Message"
         val exception = mock(Exception::class.java)
         `when`(exception.message).thenReturn(errorMessage)
-        `when`(appRepository.fetchPosts()).thenAnswer { throw exception }
+        `when`(
+            appRepository.fetchPosts(
+                ArgumentMatchers.anyInt(),
+                ArgumentMatchers.anyInt()
+            )
+        ).thenAnswer { throw exception }
         val viewModel = PostsListViewModel(appRepository)
 
-        verify(appRepository).fetchPosts()
+        verify(appRepository).fetchPosts(ArgumentMatchers.anyInt(), ArgumentMatchers.anyInt())
         verify(exception).printStackTrace()
         assertEquals(errorMessage, viewModel.error.value)
         assertNotNull(viewModel.postsList)

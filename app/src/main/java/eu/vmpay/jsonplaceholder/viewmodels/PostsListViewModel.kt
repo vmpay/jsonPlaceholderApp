@@ -20,7 +20,7 @@ class PostsListViewModel @Inject constructor(appRepository: AppRepository) : Bas
 
     init {
         launch {
-            flow { emit(appRepository.fetchPosts()) }
+            flow { emit(appRepository.fetchPosts(10, 0)) }
                 .catch {
                     error.value = it.message
                     it.printStackTrace()

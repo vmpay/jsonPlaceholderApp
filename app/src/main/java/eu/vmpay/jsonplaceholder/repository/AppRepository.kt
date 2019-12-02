@@ -19,8 +19,8 @@ class AppRepository @Inject constructor(
 
     suspend fun getPost(postId: Int): List<Post> = postsDao.getById(postId)
 
-    suspend fun fetchPosts(): List<Post> = withContext(Dispatchers.IO) {
-        val data = jsonPlaceholderService.getPosts()
+    suspend fun fetchPosts(limit: Int, offset: Int): List<Post> = withContext(Dispatchers.IO) {
+        val data = jsonPlaceholderService.getPosts(limit, offset)
         postsDao.insert(data.toTypedArray())
         data
     }
@@ -37,9 +37,10 @@ class AppRepository @Inject constructor(
 
     fun getCommentsByPostFactory(postId: Int) = commentsDao.getFactory(postId)
 
-    suspend fun fetchCommentsByPost(postId: Int) = withContext(Dispatchers.IO) {
-        val data = jsonPlaceholderService.getPostComments(postId)
-        commentsDao.insertOrUpdate(data)
-        data
-    }
+    suspend fun fetchCommentsByPost(postId: Int, limit: Int, offset: Int) =
+        withContext(Dispatchers.IO) {
+            val data = jsonPlaceholderService.getPostComments(postId, limit, offset)
+            commentsDao.insertOrUpdate(data)
+            data
+        }
 }
