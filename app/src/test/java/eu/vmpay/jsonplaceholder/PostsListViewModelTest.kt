@@ -35,23 +35,23 @@ class PostsListViewModelTest {
 
     @Test
     fun initHappyTest() {
-        `when`(appRepository.fetchPosts()).thenReturn(Single.just(listOf()))
+        `when`(appRepository.fetchPosts(anyInt(), anyInt())).thenReturn(Single.just(listOf()))
         val viewModel = PostsListViewModel(appRepository, schedulerProvider)
         testScheduler.triggerActions()
 
-        verify(appRepository).fetchPosts()
+        verify(appRepository).fetchPosts(anyInt(), anyInt())
         assertEquals("null", viewModel.error.value)
         assertNotNull(viewModel.postsList)
     }
 
     @Test
     fun initFailTest() {
-        `when`(appRepository.fetchPosts()).thenReturn(Single.error(throwable))
+        `when`(appRepository.fetchPosts(anyInt(), anyInt())).thenReturn(Single.error(throwable))
         `when`(throwable.message).thenReturn(errorMessage)
         val viewModel = PostsListViewModel(appRepository, schedulerProvider)
         testScheduler.triggerActions()
 
-        verify(appRepository).fetchPosts()
+        verify(appRepository).fetchPosts(anyInt(), anyInt())
         assertEquals(errorMessage, viewModel.error.value)
         assertNotNull(viewModel.postsList)
     }

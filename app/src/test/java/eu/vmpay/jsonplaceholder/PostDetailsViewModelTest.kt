@@ -15,6 +15,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TestRule
+import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.Mockito.`when`
 import org.mockito.Mockito.mock
 
@@ -46,7 +47,13 @@ class PostDetailsViewModelTest {
 
     @Test
     fun setupHappyTest() {
-        `when`(appRepository.fetchCommentsByPost(postId)).thenReturn(Single.just(listOf()))
+        `when`(
+            appRepository.fetchCommentsByPost(
+                anyInt(),
+                anyInt(),
+                anyInt()
+            )
+        ).thenReturn(Single.just(listOf()))
         `when`(appRepository.getPost(postId)).thenReturn(Flowable.just(listOf(post)))
         `when`(post.userId).thenReturn(userId)
         `when`(appRepository.fetchUser(userId)).thenReturn(Single.just(user))
@@ -62,7 +69,13 @@ class PostDetailsViewModelTest {
 
     @Test
     fun setupFetchUserErrorTest() {
-        `when`(appRepository.fetchCommentsByPost(postId)).thenReturn(Single.error(throwable))
+        `when`(
+            appRepository.fetchCommentsByPost(
+                anyInt(),
+                anyInt(),
+                anyInt()
+            )
+        ).thenReturn(Single.error(throwable))
         `when`(appRepository.getPost(postId)).thenReturn(Flowable.just(listOf(post)))
         `when`(post.userId).thenReturn(userId)
         `when`(appRepository.fetchUser(userId)).thenReturn(Single.error(throwable))
@@ -78,7 +91,13 @@ class PostDetailsViewModelTest {
 
     @Test
     fun setupGetPostErrorTest() {
-        `when`(appRepository.fetchCommentsByPost(postId)).thenReturn(Single.error(throwable))
+        `when`(
+            appRepository.fetchCommentsByPost(
+                anyInt(),
+                anyInt(),
+                anyInt()
+            )
+        ).thenReturn(Single.error(throwable))
         `when`(appRepository.getPost(postId)).thenReturn(Flowable.just(listOf()))
 
         viewModel.setup(postId)

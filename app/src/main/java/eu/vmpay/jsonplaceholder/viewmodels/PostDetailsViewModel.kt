@@ -56,7 +56,7 @@ class PostDetailsViewModel @Inject constructor(
                 })
         )
         compositeDisposable.add(
-            appRepository.fetchCommentsByPost(postId)
+            appRepository.fetchCommentsByPost(postId, 10, 0)
                 .subscribeOn(schedulerProvider.io())
                 .observeOn(schedulerProvider.main())
                 .subscribe({

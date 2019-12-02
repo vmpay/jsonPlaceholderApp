@@ -20,7 +20,7 @@ class PostsListViewModel @Inject constructor(
 
     init {
         compositeDisposable.add(
-            appRepository.fetchPosts()
+            appRepository.fetchPosts(10, 0)
                 .subscribeOn(schedulerProvider.io())
                 .observeOn(schedulerProvider.main())
                 .subscribe({

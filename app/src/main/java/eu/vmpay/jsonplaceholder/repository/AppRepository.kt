@@ -19,7 +19,8 @@ class AppRepository @Inject constructor(
 
     fun getPost(postId: Int) = postsDao.getById(postId)
 
-    fun fetchPosts() = jsonPlaceholderService.getPosts()
+    // TODO() Paging library integration is coming soon
+    fun fetchPosts(limit: Int?, offset: Int?) = jsonPlaceholderService.getPosts(limit, offset)
         .doOnSuccess { postsDao.insertOrUpdate(it).subscribe() }
 
     fun getUser(userId: String) = usersDao.getById(userId)
@@ -31,6 +32,8 @@ class AppRepository @Inject constructor(
 
     fun getCommentsByPostFactory(postId: Int) = commentsDao.getFactory(postId)
 
-    fun fetchCommentsByPost(postId: Int) = jsonPlaceholderService.getPostComments(postId)
+    // TODO() Paging library integration is coming soon
+    fun fetchCommentsByPost(postId: Int, limit: Int?, offset: Int?) =
+        jsonPlaceholderService.getPostComments(postId, limit, offset)
         .doOnSuccess { commentsDao.insertOrUpdate(it).subscribe() }
 }
